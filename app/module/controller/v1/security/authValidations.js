@@ -27,3 +27,26 @@ exports.verifyAccessToken = ( req, res, next ) => {
     underscore.extend(req, result.value);
     return result.error ? next(new exception.ValidationErrorException(validationHelper.parseError(result.error))) : next();
 }
+
+
+exports.getUserDetailsFromCookieToken = ( req, res, next ) => {
+    writeLogInfo([' [getUserDetailsFromCookieToken]','[validation] called for ', req.headers ]);
+
+    const schema = joi.object().keys({
+        cookies : joi.object().keys({
+            "checkers-access-token" : joi.string().required()
+        }).unknown(true),
+        body    : joi.object().keys({}),
+        params  : joi.object().keys({}),
+        query   : joi.object().keys({})
+    });
+
+    let result = schema.validate({
+        query   : req.query,
+        body    : req.body,
+        params  : req.params
+    }, validationHelper.validationDefaultObject);
+
+    underscore.extend(req, result.value);
+    return result.error ? next(new exception.ValidationErrorException(validationHelper.parseError(result.error))) : next();
+}
