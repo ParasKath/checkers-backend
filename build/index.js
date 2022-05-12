@@ -8,7 +8,7 @@ const host = process.env.NODE_HOST || 'localhost';
  * @event App Listener
  */
 
-console.log(port + host);
+console.log("Application running on port : " + port + " and host: " + host);
 
  const io = require('socket.io')(app.listen(port,host), {
     transports: ['websocket'],

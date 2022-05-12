@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "SET NODE_ENV=development & nodemon build/index.js",
     "stage": "SET NODE_ENV=staging & node build/index.js",
-    "start": "SET NODE_ENV=production & nodemon build/index.js"
+    "start": "SET NODE_ENV=production & node build/index.js"
   },
   "repository": {
     "type": "git",
