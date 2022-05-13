@@ -1,9 +1,10 @@
-let nextGameId = 0;
-
+const constant = require(__basePath + 'app/config/constant');
 const movePiece = require('./movePiece');
+const UserModel = require(constant.path.app + 'models/users');
 
 const games = [];
 const GamesStarted= [];
+let nextGameId = 0;
 
 const getGameForPlayer = (player) => {
   const ans= games.find((g) =>
@@ -86,7 +87,7 @@ exports.addPlayerToGame = ({ player, gameId }) => {
   return 'black';
 };
 
-exports.endGame = ({ player, winner }) => {
+exports.endGame = async ({ player, winner }) => {
   
   const game = getGameForPlayer(player);
   
@@ -101,12 +102,14 @@ exports.endGame = ({ player, winner }) => {
         {
           console.log("Add 50");
           console.log(emailid.email);
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50 } })
 
         }
         else
         {
           console.log("Subtract 50");
           console.log(emailid.email);
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50 } })
         }
       })
       currentPlayer.socket.emit('end-game');
