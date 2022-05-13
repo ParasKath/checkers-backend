@@ -1,6 +1,6 @@
 let nextGameId = 0;
 
-const movePiece = require('./movePiece');
+const movePiece = require('./movepiece');
 
 const games = [];
 const GamesStarted= [];
