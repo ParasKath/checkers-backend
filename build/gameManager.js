@@ -94,16 +94,17 @@ exports.endGame = async ({ player, winner }) => {
   // players might disconnect while in the lobby
   if (!game) return;
   games.splice(games.indexOf(game), 1);
-  game.players.forEach((currentPlayer) => {
-    if (player !== currentPlayer.socket)
-    {
-      game.email.forEach(emailid=>{
+  bothPlayers = game.players
+
+  for( let currentPlayer of bothPlayers ) {
+    if (player !== currentPlayer.socket) {
+      playersEmail = game.email
+      for ( let emailid of playersEmail ) {
         if(emailid.color === currentPlayer.color)
         {
           console.log("Add 50");
           console.log(emailid.email);
           await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50 } })
-
         }
         else
         {
@@ -111,12 +112,11 @@ exports.endGame = async ({ player, winner }) => {
           console.log(emailid.email);
           await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50 } })
         }
-      })
+      }
       currentPlayer.socket.emit('end-game');
-    }
-      
-    if (winner) currentPlayer.socket.emit('winner', winner);
-  });
+    } 
+    if (winner) currentPlayer.socket.emit('winner', winner);  
+  }
 };
 
 exports.isGameOver = ({ player }) => {
