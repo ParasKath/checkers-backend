@@ -6,9 +6,16 @@ const games = [];
 const GamesStarted= [];
 
 const getGameForPlayer = (player) => {
-  return games.find((g) =>
-    g.players.find((p) => p.socket === player)
+  const ans= games.find((g) =>
+    g.players.find((p) => {
+      if(p.socket === player)
+      {
+        //console.log(g);
+        return player;
+      }
+    })
   );
+  return ans;
 };
 
 exports.getGames = () =>
@@ -20,7 +27,12 @@ exports.getGames = () =>
     };
   });
 
-exports.createGame = ({ player, name }) => {
+exports.createGame = ({ player, name,email }) => {
+ const player1= {
+   email:email,
+   color:'red'
+ }
+
   const game = {
     name,
     turn: 'red',
@@ -31,7 +43,7 @@ exports.createGame = ({ player, name }) => {
       },
     ],
     chat: [],
-    id: nextGameId++,
+    id: name,
     board: [
       [1, 0, 1, 0, 1, 0, 1, 0],
       [0, 1, 0, 1, 0, 1, 0, 1],
@@ -42,16 +54,7 @@ exports.createGame = ({ player, name }) => {
       [2, 0, 2, 0, 2, 0, 2, 0],
       [0, 2, 0, 2, 0, 2, 0, 2],
     ],
-    // board: [
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 1, 0, 0, 0, 0, 0],
-    //   [0, 2, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    // ],
+    email:[player1]
   };
   games.push(game);
 
@@ -84,13 +87,31 @@ exports.addPlayerToGame = ({ player, gameId }) => {
 };
 
 exports.endGame = ({ player, winner }) => {
+  
   const game = getGameForPlayer(player);
+  
   // players might disconnect while in the lobby
   if (!game) return;
   games.splice(games.indexOf(game), 1);
   game.players.forEach((currentPlayer) => {
     if (player !== currentPlayer.socket)
+    {
+      game.email.forEach(emailid=>{
+        if(emailid.color === currentPlayer.color)
+        {
+          console.log("Add 50");
+          console.log(emailid.email);
+
+        }
+        else
+        {
+          console.log("Subtract 50");
+          console.log(emailid.email);
+        }
+      })
       currentPlayer.socket.emit('end-game');
+    }
+      
     if (winner) currentPlayer.socket.emit('winner', winner);
   });
 };

@@ -69,7 +69,8 @@ exports.getUserDetailsFromCookieToken = async function (req, res, next) {
 	writeLogInfo(['[getUserDetailsFromCookieToken]', '[controller] called : ', [req.cookies]]);
 	try {
 
-		console.log(req.cookies)
+		console.log("Hello from the get user details");
+		console.log(req)
 
 		if (!req.cookies['checkers-access-token'] ) {
 			return next(new exception.HeaderNotFoundException());
