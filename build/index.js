@@ -1,10 +1,8 @@
 global.__basePath = process.cwd() + '/';
 const app = require(__basePath + 'app/app.js');
 // const port = process.env.NODE_PORT || 5000 ;
-// const host = process.env.NODE_HOST || '0.0.0.0';
-
-const port = process.env.PORT || 5000 ;
-const host = '0.0.0.0';
+const host = process.env.NODE_HOST || '0.0.0.0';
+const port = process.env.PORT || 4000 ;
 
 /**
  * @description Listen Server at configured port
