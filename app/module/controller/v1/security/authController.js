@@ -69,13 +69,13 @@ exports.getUserDetailsFromCookieToken = async function (req, res, next) {
 	writeLogInfo(['[getUserDetailsFromCookieToken]', '[controller] called : ', [req.cookies]]);
 	try {
 
-		console.log("Hello from the get user details");
-		console.log(req)
-
 		if (!req.cookies['checkers-access-token'] ) {
 			return next(new exception.HeaderNotFoundException());
 		}
 		const accessToken = req.cookies['checkers-access-token'];
+		
+		console.log(accessToken);
+		
 		const decryptedToken = await new jwt().verify(accessToken, process.env.JWT_SECRET);
 
         let ifValidUser = await UserModel.findOne({ "email" : decryptedToken.email, "sessionToken" : decryptedToken.sessionToken })

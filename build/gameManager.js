@@ -94,28 +94,45 @@ exports.endGame = async ({ player, winner }) => {
   // players might disconnect while in the lobby
   if (!game) return;
   games.splice(games.indexOf(game), 1);
+
   bothPlayers = game.players
 
-  for( let currentPlayer of bothPlayers ) {
+  for( let currentPlayer of bothPlayers ) 
+  {
+
     if (player !== currentPlayer.socket) {
       playersEmail = game.email
       for ( let emailid of playersEmail ) {
         if(emailid.color === currentPlayer.color)
         {
-          console.log("Add 50");
-          console.log(emailid.email);
-          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50 } })
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50,"win":1 } })
         }
         else
         {
-          console.log("Subtract 50");
-          console.log(emailid.email);
-          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50 } })
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50,"lost":1} })
         }
       }
       currentPlayer.socket.emit('end-game');
     } 
-    if (winner) currentPlayer.socket.emit('winner', winner);  
+    else if (winner)
+    {
+      if(winner === currentPlayer.socket)
+      {
+        playersEmail = game.email
+        for ( let emailid of playersEmail ) {
+        if(emailid.color === currentPlayer.color)
+        {
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50,"win":1 } })
+        }
+        else
+        {
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50,"lost":1} })
+        }
+        }
+        currentPlayer.socket.emit('winner', winner);  
+      }
+      
+    } 
   }
 };
 

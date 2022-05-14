@@ -57,6 +57,3 @@ console.log("Application running on port : " + port + " and host: " + host);
 
 
 
-// app.listen(port,host, function () {
-//     console.log(`Listening port ${port}`);
-// });
