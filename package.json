@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "SET NODE_ENV=development & nodemon build/index.js",
     "stage": "SET NODE_ENV=staging & node build/index.js",
-    "start": "SET NODE_ENV=production & node build/index.js"
+    "start": "SET NODE_ENV=production & nodemon build/index.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "csurf": "^1.11.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fs": "^0.0.1-security",

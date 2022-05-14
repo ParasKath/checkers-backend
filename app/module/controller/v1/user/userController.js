@@ -3,6 +3,7 @@ const util = require("util");
 const user = require(".");
 const fs = require('fs')
 const _ = require("lodash")
+const csrf = require('csurf');
 const constant = require(__basePath + 'app/config/constant');
 const response = require(constant.path.app + 'util/response');
 const { writeLogInfo, writeLogErrorTrace } = require(constant.path.app + 'util/logger');
@@ -12,6 +13,7 @@ const { getUniqueCode , getVerificationCode } = require(constant.path.app + 'uti
 const UserModel = require(constant.path.app + 'models/users');
 const { sendEmail } = require( constant.path.app + 'util/sendGrid')
 const generateUniqueId = require('generate-unique-id');
+const exception   = require(constant.path.app + 'core/exception');
 
 
 
@@ -22,6 +24,8 @@ exports.signUp = async function( req, res, next ) {
         userObject = {}
         userObject['email'] = requestBody['email']
         userObject['betAmount']= constant.initialBetAmount;
+        userObject['win']= constant.win;
+        userObject['lost']=constant.lost;
 
         writeLogInfo(['[signup]', '[controller] called for: ', userObject ]);
 
@@ -68,7 +72,7 @@ exports.logIn = async( req, res, next ) => {
 
         writeLogInfo(['[login]', '[controller] response body: ', data]);
         data.token = token;
-        res.cookie('token',data['token'],{ maxAge: 900000, httpOnly: true});
+        
         return res.status(200).json(response.build("SUCCESS", { result: { "email" : data["email"], "token" : data["token"] } } ));
 
     }
@@ -183,16 +187,14 @@ exports.CreateGame = async(req,res,next)=>
     try
     {
         let requestBody= req.body;
+        
         const gamecode = generateUniqueId({
             length: 15,
             useLetters: true,
             useNumbers:true
           });
 
-          console.log(requestBody);
-
-        //let userData = await UserModel.findOne({ "" : requestBody['email']})  
-        
+          
         emailFormat = constant.emailFormat.CreatGame;
         readFile =  util.promisify(fs.readFile)
         emailTemplate  = await readFile(emailFormat.html)
@@ -213,8 +215,44 @@ exports.CreateGame = async(req,res,next)=>
     }
     catch(error)
     {
-        writeLogErrorTrace(['[resetPassword]', '[controller] Error: ', error]);
+        writeLogErrorTrace(['[CreateGameissue]', '[controller] Error: ', error]);
         return res.status(500).json(response.build('ERROR_SERVER_ERROR', {error: error}));
+    }
+}
+
+exports.getUserdata= async(req,res,next)=>{
+
+    try {
+
+        if (!req.body['token']  ) {
+			return res.status(200).json(response.build('UNAUTHORIZED_USER', { "authorized" : false}));
+		}
+        const accessToken = req.body['token'];
+		
+		const decryptedToken = await new jwt().verify(accessToken, process.env.JWT_SECRET);
+
+        let ifValidUser = await UserModel.findOne({ "email" : decryptedToken.email, "sessionToken" : decryptedToken.sessionToken })
+
+        if( !ifValidUser ) {
+            return res.status(500).json(response.build('UNAUTHORIZED_USER', { "authorized" : false , "userId" : decryptedToken['_id']}))
+        }
+		console.log(ifValidUser+ "from the backend");
+		writeLogInfo(['[getUserDetailsFromCookieToken]', '[controller] response : ', decryptedToken]);
+		return res.status(200).json(response.build("SUCCESS", { email: ifValidUser.email,betAmount:ifValidUser.betAmount,gamesPlayed:ifValidUser.gamesPlayed,win:ifValidUser.win,lost:ifValidUser.lost} ));
+
+	} catch (error) {
+			writeLogErrorTrace(['[getUserDetailsFromCookieToken]', '[controller] Error: ', error]);
+			return res.status(500).json(response.build('ERROR_SERVER_ERROR', {error: error}));
+	}
+
+}
+
+exports.createCsrftoken = async(req,res,next)=>{
+    try {
+        return res.status(200).json(response.build("SUCCESS", { csrf: req.csrfToken()}));
+
+    } catch (error) {
+        console.log(error);
     }
 }
 

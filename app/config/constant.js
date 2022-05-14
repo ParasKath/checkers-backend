@@ -35,5 +35,7 @@ module.exports = {
         linkSentToResetPassword : "Reset password link has been sent to your registered email address. Valid for 5 minutes.",
         passwordReset : "Password reset successfully."
     },
-    initialBetAmount:1200
+    initialBetAmount:1200,
+    win:0,
+    lost:0
 };

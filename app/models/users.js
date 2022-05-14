@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema({
 	verificationCode : { type: String, default: "" },
 	betAmount:{type:Number,required:true},
 	gamesPlayed:[{type:String}],
-	csrfToken:{type:String}
+	win:{type:Number},
+	lost:{type:Number}
 },{timestamps : true});
 
 module.exports = mongoose.model( "users" , userSchema );

@@ -1,14 +1,22 @@
-let nextGameId = 0;
-
+const constant = require(__basePath + 'app/config/constant');
 const movePiece = require('./movePiece');
+const UserModel = require(constant.path.app + 'models/users');
 
 const games = [];
 const GamesStarted= [];
+let nextGameId = 0;
 
 const getGameForPlayer = (player) => {
-  return games.find((g) =>
-    g.players.find((p) => p.socket === player)
+  const ans= games.find((g) =>
+    g.players.find((p) => {
+      if(p.socket === player)
+      {
+        //console.log(g);
+        return player;
+      }
+    })
   );
+  return ans;
 };
 
 exports.getGames = () =>
@@ -20,7 +28,12 @@ exports.getGames = () =>
     };
   });
 
-exports.createGame = ({ player, name }) => {
+exports.createGame = ({ player, name,email }) => {
+ const player1= {
+   email:email,
+   color:'red'
+ }
+
   const game = {
     name,
     turn: 'red',
@@ -31,7 +44,7 @@ exports.createGame = ({ player, name }) => {
       },
     ],
     chat: [],
-    id: nextGameId++,
+    id: name,
     board: [
       [1, 0, 1, 0, 1, 0, 1, 0],
       [0, 1, 0, 1, 0, 1, 0, 1],
@@ -42,16 +55,7 @@ exports.createGame = ({ player, name }) => {
       [2, 0, 2, 0, 2, 0, 2, 0],
       [0, 2, 0, 2, 0, 2, 0, 2],
     ],
-    // board: [
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 1, 0, 0, 0, 0, 0],
-    //   [0, 2, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    //   [0, 0, 0, 0, 0, 0, 0, 0],
-    // ],
+    email:[player1]
   };
   games.push(game);
 
@@ -83,16 +87,53 @@ exports.addPlayerToGame = ({ player, gameId }) => {
   return 'black';
 };
 
-exports.endGame = ({ player, winner }) => {
+exports.endGame = async ({ player, winner }) => {
+  
   const game = getGameForPlayer(player);
+  
   // players might disconnect while in the lobby
   if (!game) return;
   games.splice(games.indexOf(game), 1);
-  game.players.forEach((currentPlayer) => {
-    if (player !== currentPlayer.socket)
+
+  bothPlayers = game.players
+
+  for( let currentPlayer of bothPlayers ) 
+  {
+
+    if (player !== currentPlayer.socket) {
+      playersEmail = game.email
+      for ( let emailid of playersEmail ) {
+        if(emailid.color === currentPlayer.color)
+        {
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50,"win":1 } })
+        }
+        else
+        {
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50,"lost":1} })
+        }
+      }
       currentPlayer.socket.emit('end-game');
-    if (winner) currentPlayer.socket.emit('winner', winner);
-  });
+    } 
+    else if (winner)
+    {
+      if(winner === currentPlayer.socket)
+      {
+        playersEmail = game.email
+        for ( let emailid of playersEmail ) {
+        if(emailid.color === currentPlayer.color)
+        {
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": 50,"win":1 } })
+        }
+        else
+        {
+          await UserModel.update( { "email" : emailid.email}, { $inc: { "betAmount": -50,"lost":1} })
+        }
+        }
+        currentPlayer.socket.emit('winner', winner);  
+      }
+      
+    } 
+  }
 };
 
 exports.isGameOver = ({ player }) => {
