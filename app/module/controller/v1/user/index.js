@@ -3,6 +3,7 @@ const router = require('express').Router({ caseSensitive: true, strict: true});
 const userController = require(constant.path.moduleV1 + '/user/userController');
 const userValidations = require(constant.path.moduleV1 + '/user/userValidations');
 const authController = require(constant.path.moduleV1 + '/security/authController');
+var csrf = require('csurf');
 
 router.post('/signUp', userValidations.signUpValidation , userController.signUp );
 
@@ -14,9 +15,18 @@ router.post('/forgotPassword', userValidations.forgotPasswordValidation , userCo
 
 router.post('/resetPassword', userValidations.resetPasswordValidation , userController.resetPassword );
 
-router.post('/CreateGame',userController.CreateGame)
+router.post('/GetData',userController.getUserdata);
+
+var csrfProtection = csrf({ cookie: true})
+
+router.get('/getCsrf',csrfProtection,userController.createCsrftoken)
+
+router.post('/CreateGame',userController.CreateGame);
 
 //authController.verifyAccessTokenMiddleware,
+
+
+
 module.exports = {
     router : router
 }
